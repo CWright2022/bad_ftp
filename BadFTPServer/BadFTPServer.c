@@ -28,30 +28,56 @@ int main() {
     // receive, account for /r/n
 
     while (true) {
-        char buffer[1024];
-        recv_line(client_socket, buffer);
+        char buffer[1024] = { 0 };
 
+        int result = recv_line(client_socket, buffer);
+
+        if (result == 0) {
+            printf("Client disconnected.\n");
+            break;
+        }
+
+        if (result < 0) {
+            fprintf(stderr, "Client connection error.\n");
+            break;
+        }
+
+        printf("Received: [%s]\n", buffer);
 
         if (strcmp(buffer, UPLOAD_CMD) == 0) {
-            send(client_socket, uploadResponse, (int)strlen(uploadResponse), 0);
-            printf("sent goodbye\n");
+            send_all(
+                client_socket,
+                uploadResponse,
+                (int)strlen(uploadResponse)
+            );
+
+            printf("Sent upload response.\n");
         }
         else if (strcmp(buffer, EXIT_CMD) == 0) {
-            send(client_socket, goodbye, (int)strlen(goodbye), 0);
-            printf("sent goodbye.\n");
+            send_all(
+                client_socket,
+                goodbye,
+                (int)strlen(goodbye)
+            );
+
+            printf("Sent goodbye.\n");
             break;
         }
         else {
-            send(client_socket, hello, (int)strlen(hello), 0);
+            send_all(
+                client_socket,
+                hello,
+                (int)strlen(hello)
+            );
+
             printf("Hello message sent.\n");
         }
-
     }
 
 
     // clean up
     closesocket(client_socket);
-    cleanup_server(server_socket);
+    cleanup_socket(server_socket);
 
     return 0;
 }
