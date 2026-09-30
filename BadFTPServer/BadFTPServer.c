@@ -7,12 +7,13 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include "network.h"
+#include <string.h>
 
 #pragma comment(lib, "Ws2_32.lib")
 
 #define PORT 1234
 #define BUFFER_LEN 1024
-#define UPLOAD_CMD "upload"
+#define UPLOAD_CMD "UPLOAD"
 #define EXIT_CMD "exit"
 
 int main() {
@@ -44,34 +45,72 @@ int main() {
 
         printf("Received: [%s]\n", buffer);
 
-        if (strcmp(buffer, UPLOAD_CMD) == 0) {
-            send_all(
-                client_socket,
-                uploadResponse,
-                (int)strlen(uploadResponse)
-            );
+        char cmd[256];
+        char filename[256];
+        char filesize_s[256];
 
-            printf("Sent upload response.\n");
-        }
-        else if (strcmp(buffer, EXIT_CMD) == 0) {
-            send_all(
-                client_socket,
-                goodbye,
-                (int)strlen(goodbye)
-            );
+        long filesize;
 
-            printf("Sent goodbye.\n");
-            break;
-        }
-        else {
-            send_all(
-                client_socket,
-                hello,
-                (int)strlen(hello)
-            );
+        char* context = NULL;
+        char* token = NULL;
 
-            printf("Hello message sent.\n");
+        /*
+         * Parse command
+         */
+        token = strtok_s(buffer, " ", &context);
+
+        if (token == NULL) {
+            fprintf(stderr, "Missing command.\n");
+            return;
         }
+
+        strcpy_s(cmd, sizeof(cmd), token);
+
+        /*
+         * Parse filename
+         */
+        token = strtok_s(NULL, " ", &context);
+
+        if (token == NULL) {
+            fprintf(stderr, "Missing filename.\n");
+            return;
+        }
+
+        strcpy_s(filename, sizeof(filename), token);
+
+        /*
+         * Parse file size
+         */
+        token = strtok_s(NULL, " ", &context);
+
+        if (token == NULL) {
+            fprintf(stderr, "Missing file size.\n");
+            return;
+        }
+
+        strcpy_s(filesize_s, sizeof(filesize_s), token);
+
+        /*
+         * Convert file size string to long.
+         */
+        char* endptr = NULL;
+
+        filesize = strtol(
+            filesize_s,
+            &endptr,
+            10
+        );
+
+        if (endptr == filesize_s || *endptr != '\0' || filesize < 0) {
+            fprintf(stderr, "Invalid file size: %s\n", filesize_s);
+            return;
+        }
+
+        printf("Command:  %s\n", cmd);
+        printf("Filename: %s\n", filename);
+        printf("Filesize: %ld\n", filesize);
+
+
     }
 
 
