@@ -1,0 +1,9 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="BadFTPClient/BadFTPClient.vcxproj" />
+  <Project Path="BadFTPCommon/BadFTPCommon.vcxproj" />
+  <Project Path="BadFTPServer/BadFTPServer.vcxproj" />
+</Solution>
