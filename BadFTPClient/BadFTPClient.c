@@ -41,6 +41,11 @@ int main(void)
     // send upload command (UPLOAD filename size)
     send_all(socket, command_to_send, (int)strlen(command_to_send));
 
+    printf("awaiting server response...");
+    char buffer[256];
+    recv_line(socket, buffer);
+    printf("%s", buffer);
+
     fclose(file);
     cleanup_socket(socket);
 

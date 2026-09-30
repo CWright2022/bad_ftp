@@ -110,7 +110,16 @@ int main() {
         printf("Filename: %s\n", filename);
         printf("Filesize: %ld\n", filesize);
 
-
+        FILE* file = NULL;
+        if (fopen_s(&file, filename, "wb") != 0) {
+            fprintf(stderr, "Could not open file: %s\n", filename);
+            return EXIT_FAILURE;
+        }
+        printf("opened file\n");
+        char message[] = "READY\r\n";
+        send_all(client_socket, message, strlen(message));
+        printf("sent ready\n");
+        printf("all done!\n");
     }
 
 
