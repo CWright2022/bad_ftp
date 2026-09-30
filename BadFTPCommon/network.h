@@ -19,4 +19,6 @@ SOCKET connect_server(const char* server_ip, int port);
 
 int receive_file(SOCKET socket, FILE* file, long file_size);
 
+int send_file(SOCKET socket, FILE* file, long file_size);
+
 #endif

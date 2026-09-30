@@ -17,14 +17,18 @@
 #define EXIT_CMD "exit"
 
 int main() {
+
+    char cwd[1024];
+
+    if (_getcwd(cwd, sizeof(cwd)) != NULL) {
+        printf("Working directory: %s\n", cwd);
+    }
+
     SOCKET server_socket = setup_server(1234);
     SOCKET client_socket = accept_client(server_socket);
     struct sockaddr_in address;
     int addrlen = sizeof(address);
     char buffer[BUFFER_LEN] = { 0 };
-    const char* hello = "Hello from Windows Server!\r\n";
-    const char* uploadResponse = "upload!\r\n";
-    const char* goodbye = "goodbye!\r\n";
 
     // receive, account for /r/n
 
@@ -119,6 +123,7 @@ int main() {
         char message[] = "READY\r\n";
         send_all(client_socket, message, strlen(message));
         printf("sent ready\n");
+        receive_file(client_socket, file, filesize);
         printf("all done!\n");
     }
 

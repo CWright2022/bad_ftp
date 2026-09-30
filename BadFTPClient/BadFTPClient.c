@@ -44,7 +44,7 @@ int main(void)
     printf("awaiting server response...");
     char buffer[256];
     recv_line(socket, buffer);
-    printf("%s", buffer);
+    send_file(socket, file, file_size);
 
     fclose(file);
     cleanup_socket(socket);

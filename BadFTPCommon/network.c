@@ -163,6 +163,7 @@ int receive_file(SOCKET socket, FILE* file, long file_size)
             to_receive,
             0
         );
+        printf("received %d bytes\n", received);
 
         if (received == SOCKET_ERROR) {
             fprintf(
@@ -202,6 +203,33 @@ int receive_file(SOCKET socket, FILE* file, long file_size)
         total_received += received;
     }
 
+    return 0;
+}
+
+#define TRANSFER_BUFFER_SIZE 4096
+int send_file(SOCKET socket, FILE* file, long file_size) {
+    char buffer[TRANSFER_BUFFER_SIZE];
+    long total_sent = 0;
+    while (total_sent < file_size) {
+        long remaining = file_size - total_sent;
+        size_t bytes_to_read;
+        if (remaining < TRANSFER_BUFFER_SIZE) {
+            bytes_to_read = (size_t) remaining;
+        }
+        else {
+            bytes_to_read = TRANSFER_BUFFER_SIZE;
+        }
+        size_t bytes_read = fread_s(buffer, sizeof(buffer), 1, bytes_to_read, file);
+        if (bytes_read == 0) {
+            fprintf(stderr, "unexpected end of file");
+            return -1;
+        }
+        if (send_all(socket, buffer, (int)bytes_read) != 0) {
+            fprintf(stderr, "failed to send data");
+            return -2;
+        }
+        total_sent += (long)bytes_read;
+    }
     return 0;
 }
 
