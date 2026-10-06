@@ -13,22 +13,21 @@
 #define PORT 1234
 #define BUFFER_LEN 1024
 
-static int parse_upload_command(char *command, char *filename,
-                                size_t filename_size, long *file_size)
+static int parse_upload_command(char *command, char *filename, long *file_size)
 {
     char *save_pointer;
     char *token;
     char *end_pointer;
 
     token = strtok_r(command, " ", &save_pointer);
-    if (token == NULL || strcmp(token, "UPLOAD") != 0) {
-        fprintf(stderr, "Invalid or missing command\n");
+    if (token == NULL) {
+        fprintf(stderr, "Missing command\n");
         return -1;
     }
 
     token = strtok_r(NULL, " ", &save_pointer);
-    if (token == NULL || strlen(token) >= filename_size) {
-        fprintf(stderr, "Invalid or missing filename\n");
+    if (token == NULL) {
+        fprintf(stderr, "Missing filename\n");
         return -1;
     }
     strcpy(filename, token);
@@ -89,8 +88,7 @@ int main(void)
         }
 
         printf("Received: [%s]\n", command);
-        if (parse_upload_command(command, filename, sizeof(filename),
-                                 &file_size) != 0) {
+        if (parse_upload_command(command, filename, &file_size) != 0) {
             break;
         }
 

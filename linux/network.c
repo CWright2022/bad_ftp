@@ -97,14 +97,13 @@ int send_all(badftp_socket_t socket, const char *buffer, size_t length)
 int recv_line(badftp_socket_t socket, char *buffer, size_t buffer_size)
 {
     size_t used = 0;
-    char character;
 
     if (buffer_size == 0) {
         return -2;
     }
 
     while (used + 1 < buffer_size) {
-        ssize_t received = recv(socket, &character, 1, 0);
+        ssize_t received = recv(socket, buffer + used, buffer_size - 1 - used, 0);
         if (received < 0) {
             if (retryable_error()) {
                 continue;
@@ -117,17 +116,17 @@ int recv_line(badftp_socket_t socket, char *buffer, size_t buffer_size)
             return 0;
         }
 
-        if (character == '\r') {
-            continue;
+        used += (size_t)received;
+        buffer[used] = '\0';
+
+        char *end = strstr(buffer, "\r\n");
+        if (end != NULL) {
+            *end = '\0';
+            return (int)(end - buffer);
         }
-        if (character == '\n') {
-            buffer[used] = '\0';
-            return (int)used;
-        }
-        buffer[used++] = character;
     }
 
-    buffer[used] = '\0';
+    buffer[buffer_size - 1] = '\0';
     return -2;
 }
 
