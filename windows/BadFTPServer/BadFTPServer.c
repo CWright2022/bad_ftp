@@ -80,7 +80,12 @@ int main() {
             return;
         }
 
-        strcpy_s(filename, sizeof(filename), token);
+        __try {
+            strcpy(filename, token);
+        }
+        __except (EXCEPTION_EXECUTE_HANDLER) {
+            puts("Exception handled.");
+        }
 
         /*
          * Parse file size
