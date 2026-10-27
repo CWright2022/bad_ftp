@@ -2,7 +2,7 @@
 #include "network.h"
 int main(void)
 {
-    char filename[256];
+    char filename[1024];
 
     char cwd[1024];
 
@@ -11,7 +11,7 @@ int main(void)
     }
 
     printf("Enter file path to send: ");
-    scanf_s("%255s", filename, (unsigned)sizeof(filename));
+    scanf_s("%1024s", filename, (unsigned)sizeof(filename));
 
     printf("Opening %s\n", filename);
     FILE* file = NULL;

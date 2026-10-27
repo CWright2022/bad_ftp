@@ -68,7 +68,7 @@ int main() {
             return;
         }
 
-        strcpy_s(cmd, sizeof(cmd), token);
+        strcpy(cmd, token);
 
         /*
          * Parse filename

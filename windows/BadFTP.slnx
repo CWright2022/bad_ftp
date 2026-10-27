@@ -3,7 +3,7 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="BadFTPClient/BadFTPClient.vcxproj" />
-  <Project Path="BadFTPCommon/BadFTPCommon.vcxproj" />
-  <Project Path="BadFTPServer/BadFTPServer.vcxproj" />
+  <Project Path="BadFTPClient/BadFTPClient.vcxproj" Id="821d0e23-e06a-4842-af03-9f4515fece50" />
+  <Project Path="BadFTPCommon/BadFTPCommon.vcxproj" Id="675d17af-3e9b-4284-b90d-f37145476aae" />
+  <Project Path="BadFTPServer/BadFTPServer.vcxproj" Id="d01516c3-617b-4c9d-928e-4fb1648defb6" />
 </Solution>
