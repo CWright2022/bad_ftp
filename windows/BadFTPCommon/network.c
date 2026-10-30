@@ -1,7 +1,10 @@
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#pragma comment(lib, "Ws2_32.lib")
+
 #include "network.h"
 #include <stdio.h>
-
-#pragma comment(lib, "Ws2_32.lib")
+#pragma function(strcpy)
 
 #define TRANSFER_BUFFER_SIZE 4096
 
@@ -103,12 +106,12 @@ void cleanup_socket(SOCKET socket) {
 
 int recv_line(SOCKET socket, char* buffer) {
     int used = 0;
-    while (used < 1023) {
+    while (used < TRANSFER_BUFFER_SIZE-1) {
 
         int valread = recv(
             socket,
             buffer + used,
-            1023 - used,
+            TRANSFER_BUFFER_SIZE - 1 - used,
             0
         );
 

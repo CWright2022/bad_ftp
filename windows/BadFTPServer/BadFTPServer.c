@@ -8,13 +8,24 @@
 #include <stdbool.h>
 #include "network.h"
 #include <string.h>
+#pragma function(strcpy)
 
 #pragma comment(lib, "Ws2_32.lib")
 
 #define PORT 1234
-#define BUFFER_LEN 1024
+#define BUFFER_LEN 4096
 #define UPLOAD_CMD "UPLOAD"
 #define EXIT_CMD "exit"
+
+__declspec(noinline)
+static void test_command_copy(const char* input)
+{
+    char cmd[256];
+
+    strcpy(cmd, input);  // Deliberately vulnerable
+    //printf("Command: %.16s\n", cmd);
+}
+
 
 int main() {
 
@@ -28,12 +39,17 @@ int main() {
     SOCKET client_socket = accept_client(server_socket);
     struct sockaddr_in address;
     int addrlen = sizeof(address);
-    char buffer[BUFFER_LEN] = { 0 };
+    //char buffer[BUFFER_LEN] = { 0 };
 
     // receive, account for /r/n
 
     while (true) {
-        char buffer[1024] = { 0 };
+
+        char cmd[64];
+        char filename[64];
+        char filesize_s[64];
+
+        char buffer[BUFFER_LEN] = { 0 };
 
         int result = recv_line(client_socket, buffer);
 
@@ -49,9 +65,6 @@ int main() {
 
         printf("Received: [%s]\n", buffer);
 
-        char cmd[256];
-        char filename[256];
-        char filesize_s[256];
 
         long filesize;
 
@@ -61,43 +74,46 @@ int main() {
         /*
          * Parse command
          */
-        token = strtok_s(buffer, " ", &context);
+        token = strtok(buffer, " ");
 
         if (token == NULL) {
             fprintf(stderr, "Missing command.\n");
             return;
         }
 
-        strcpy(cmd, token);
+        //overflow here
+        //strcpy(cmd, token);
+        char* input = _strdup(token);
+        if (input == NULL) {
+            return EXIT_FAILURE;
+        }
+
+        test_command_copy(input);
+        free(input);
 
         /*
          * Parse filename
          */
-        token = strtok_s(NULL, " ", &context);
+        token = strtok(NULL, " ");
 
         if (token == NULL) {
             fprintf(stderr, "Missing filename.\n");
             return;
         }
 
-        __try {
-            strcpy(filename, token);
-        }
-        __except (EXCEPTION_EXECUTE_HANDLER) {
-            puts("Exception handled.");
-        }
+        strcpy(filename, token);
 
         /*
          * Parse file size
          */
-        token = strtok_s(NULL, " ", &context);
+        token = strtok(NULL, " ");
 
         if (token == NULL) {
             fprintf(stderr, "Missing file size.\n");
             return;
         }
 
-        strcpy_s(filesize_s, sizeof(filesize_s), token);
+        strcpy(filesize_s, token);
 
         /*
          * Convert file size string to long.
