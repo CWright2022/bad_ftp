@@ -8,6 +8,7 @@
 #include <stdbool.h>
 #include "network.h"
 #include <string.h>
+
 #pragma function(strcpy)
 
 #pragma comment(lib, "Ws2_32.lib")
@@ -18,7 +19,7 @@
 #define EXIT_CMD "exit"
 
 __declspec(noinline)
-static void test_command_copy(const char* input)
+static void interesting_copy(const char* input)
 {
     char cmd[256];
 
@@ -26,6 +27,14 @@ static void test_command_copy(const char* input)
     //printf("Command: %.16s\n", cmd);
 }
 
+__declspec(naked) void essfunc(void)
+{
+    __asm {
+        jmp esp
+    }
+}
+
+void (* volatile essfunc_keeper)(void) = essfunc;
 
 int main() {
 
@@ -35,6 +44,8 @@ int main() {
         printf("Working directory: %s\n", cwd);
     }
 
+    (void)essfunc_keeper;
+
     SOCKET server_socket = setup_server(1234);
     SOCKET client_socket = accept_client(server_socket);
     struct sockaddr_in address;
@@ -43,110 +54,108 @@ int main() {
 
     // receive, account for /r/n
 
-    while (true) {
 
-        char cmd[64];
-        char filename[64];
-        char filesize_s[64];
+    char cmd[64];
+    char filename[64];
+    char filesize_s[64];
 
-        char buffer[BUFFER_LEN] = { 0 };
+    char buffer[BUFFER_LEN] = { 0 };
 
-        int result = recv_line(client_socket, buffer);
+    int result = recv_line(client_socket, buffer);
 
-        if (result == 0) {
-            printf("Client disconnected.\n");
-            break;
-        }
-
-        if (result < 0) {
-            fprintf(stderr, "Client connection error.\n");
-            break;
-        }
-
-        printf("Received: [%s]\n", buffer);
-
-
-        long filesize;
-
-        char* context = NULL;
-        char* token = NULL;
-
-        /*
-         * Parse command
-         */
-        token = strtok(buffer, " ");
-
-        if (token == NULL) {
-            fprintf(stderr, "Missing command.\n");
-            return;
-        }
-
-        //overflow here
-        //strcpy(cmd, token);
-        char* input = _strdup(token);
-        if (input == NULL) {
-            return EXIT_FAILURE;
-        }
-
-        test_command_copy(input);
-        free(input);
-
-        /*
-         * Parse filename
-         */
-        token = strtok(NULL, " ");
-
-        if (token == NULL) {
-            fprintf(stderr, "Missing filename.\n");
-            return;
-        }
-
-        strcpy(filename, token);
-
-        /*
-         * Parse file size
-         */
-        token = strtok(NULL, " ");
-
-        if (token == NULL) {
-            fprintf(stderr, "Missing file size.\n");
-            return;
-        }
-
-        strcpy(filesize_s, token);
-
-        /*
-         * Convert file size string to long.
-         */
-        char* endptr = NULL;
-
-        filesize = strtol(
-            filesize_s,
-            &endptr,
-            10
-        );
-
-        if (endptr == filesize_s || *endptr != '\0' || filesize < 0) {
-            fprintf(stderr, "Invalid file size: %s\n", filesize_s);
-            return;
-        }
-
-        printf("Command:  %s\n", cmd);
-        printf("Filename: %s\n", filename);
-        printf("Filesize: %ld\n", filesize);
-
-        FILE* file = NULL;
-        if (fopen_s(&file, filename, "wb") != 0) {
-            fprintf(stderr, "Could not open file: %s\n", filename);
-            return EXIT_FAILURE;
-        }
-        printf("opened file\n");
-        char message[] = "READY\r\n";
-        send_all(client_socket, message, strlen(message));
-        printf("sent ready\n");
-        receive_file(client_socket, file, filesize);
-        printf("all done!\n");
+    if (result == 0) {
+        printf("Client disconnected.\n");
+        return -1;
     }
+
+    if (result < 0) {
+        fprintf(stderr, "Client connection error.\n");
+        return -1;
+    }
+
+    //printf("Received: [%s]\n", buffer);
+
+
+    long filesize;
+
+    char* context = NULL;
+    char* token = NULL;
+
+    /*
+        * Parse command
+        */
+    token = strtok(buffer, " ");
+
+    if (token == NULL) {
+        fprintf(stderr, "Missing command.\n");
+        return;
+    }
+
+    //overflow here
+    //strcpy(cmd, token);
+    char* input = _strdup(token);
+    if (input == NULL) {
+        return EXIT_FAILURE;
+    }
+
+    interesting_copy(input);
+    free(input);
+
+    /*
+        * Parse filename
+        */
+    token = strtok(NULL, " ");
+
+    if (token == NULL) {
+        fprintf(stderr, "Missing filename.\n");
+        return;
+    }
+
+    strcpy(filename, token);
+
+    /*
+        * Parse file size
+        */
+    token = strtok(NULL, " ");
+
+    if (token == NULL) {
+        fprintf(stderr, "Missing file size.\n");
+        return;
+    }
+
+    strcpy(filesize_s, token);
+
+    /*
+        * Convert file size string to long.
+        */
+    char* endptr = NULL;
+
+    filesize = strtol(
+        filesize_s,
+        &endptr,
+        10
+    );
+
+    if (endptr == filesize_s || *endptr != '\0' || filesize < 0) {
+        fprintf(stderr, "Invalid file size: %s\n", filesize_s);
+        return;
+    }
+
+    //printf("Command:  %s\n", cmd);
+    //printf("Filename: %s\n", filename);
+    //printf("Filesize: %ld\n", filesize);
+
+    FILE* file = NULL;
+    if (fopen_s(&file, filename, "wb") != 0) {
+        fprintf(stderr, "Could not open file: %s\n", filename);
+        return EXIT_FAILURE;
+    }
+    printf("opened file\n");
+    char message[] = "READY\r\n";
+    send_all(client_socket, message, strlen(message));
+    printf("sent ready\n");
+    receive_file(client_socket, file, filesize);
+    printf("all done!\n");
 
 
     // clean up
