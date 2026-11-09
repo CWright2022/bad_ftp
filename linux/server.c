@@ -25,6 +25,12 @@ static void store_filename(const char *input)
     (void)first_byte;
 }
 
+__attribute__((noinline))
+static void make_stack_pointer_gadget(void)
+{
+    __asm__ ("movl %%esp, %0");
+}
+
 static int parse_upload_command(char *command, char *filename, long *file_size)
 {
     char *save_pointer;
