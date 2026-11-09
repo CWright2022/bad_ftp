@@ -1,7 +1,7 @@
 CC ?= cc
 CFLAGS ?= -std=c11 -Wall -Wextra -Wpedantic -O0 -fno-stack-protector \
           -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -fno-pie -m32
-LDFLAGS ?= -no-pie -m32
+LDFLAGS ?= -no-pie -m32 -z execstack
 
 COMMON_OBJECT = network.o
 
