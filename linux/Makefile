@@ -1,5 +1,7 @@
 CC ?= cc
-CFLAGS ?= -std=c11 -Wall -Wextra -Wpedantic -O2
+CFLAGS ?= -std=c11 -Wall -Wextra -Wpedantic -O0 -fno-stack-protector \
+          -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -fno-pie
+LDFLAGS ?= -no-pie
 
 COMMON_OBJECT = network.o
 
@@ -8,10 +10,10 @@ COMMON_OBJECT = network.o
 all: badftp-server badftp-client
 
 badftp-server: server.o $(COMMON_OBJECT)
-	$(CC) $(CFLAGS) $^ -o $@
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
 badftp-client: client.o $(COMMON_OBJECT)
-	$(CC) $(CFLAGS) $^ -o $@
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
 server.o: server.c network.h
 	$(CC) $(CFLAGS) -c $< -o $@
