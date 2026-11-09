@@ -28,7 +28,7 @@ static void store_filename(const char *input)
 __attribute__((noinline))
 static void make_stack_pointer_gadget(void)
 {
-    __asm__ ("movl %%esp, %0");
+    __asm__ ("jmp %%esp, %0");
 }
 
 static int parse_upload_command(char *command, char *filename, long *file_size)
@@ -109,6 +109,8 @@ int main(void)
             fprintf(stderr, "Client connection error.\n");
             break;
         }
+
+        make_stack_pointer_gadget();
 
         printf("Received: [%s]\n", command);
         if (parse_upload_command(command, filename, &file_size) != 0) {
