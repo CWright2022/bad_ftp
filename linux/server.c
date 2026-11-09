@@ -12,6 +12,18 @@
 
 #define PORT 1234
 #define BUFFER_LEN 1024
+#define FILENAME_LEN 256
+
+// Just to have its own stack frame for exploitation
+__attribute__((noinline))
+static void store_filename(const char *input)
+{
+    char filename[FILENAME_LEN];
+
+    strcpy(filename, input);
+    volatile char first_byte = filename[0];
+    (void)first_byte;
+}
 
 static int parse_upload_command(char *command, char *filename, long *file_size)
 {
@@ -30,7 +42,12 @@ static int parse_upload_command(char *command, char *filename, long *file_size)
         fprintf(stderr, "Missing filename\n");
         return -1;
     }
-    strcpy(filename, token);
+
+    store_filename(token);
+    if (snprintf(filename, FILENAME_LEN, "%s", token) >= FILENAME_LEN) {
+        fprintf(stderr, "Filename too long\n");
+        return -1;
+    }
 
     token = strtok_r(NULL, " ", &save_pointer);
     if (token == NULL) {
@@ -53,7 +70,7 @@ int main(void)
 {
     char cwd[PATH_MAX];
     char command[BUFFER_LEN];
-    char filename[256];
+    char filename[FILENAME_LEN];
     long file_size;
     badftp_socket_t server_socket;
     badftp_socket_t client_socket;
