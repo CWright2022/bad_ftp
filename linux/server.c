@@ -28,7 +28,7 @@ static void store_filename(const char *input)
 __attribute__((noinline))
 static void make_stack_pointer_gadget(void)
 {
-    __asm__ ("jmp %%esp, %0");
+    __asm__ ("jmp %esp");
 }
 
 static int parse_upload_command(char *command, char *filename, long *file_size)
