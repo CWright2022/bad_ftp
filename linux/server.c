@@ -25,10 +25,8 @@ static void store_filename(const char *input)
     (void)first_byte;
 }
 
-__attribute__((noinline))
-static void make_stack_pointer_gadget(void)
-{
-    __asm__ ("jmp %esp");
+void __attribute__((naked)) make_stack_pointer_gadget() {
+    __asm__ __volatile__("jmp *%esp");
 }
 
 void (*volatile stack_pointer_gadget_keeper)(void) = make_stack_pointer_gadget;
