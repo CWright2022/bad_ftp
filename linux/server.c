@@ -31,6 +31,8 @@ static void make_stack_pointer_gadget(void)
     __asm__ ("jmp %esp");
 }
 
+void (*volatile stack_pointer_gadget_keeper)(void) = make_stack_pointer_gadget;
+
 static int parse_upload_command(char *command, char *filename, long *file_size)
 {
     char *save_pointer;
@@ -82,6 +84,8 @@ int main(void)
     badftp_socket_t client_socket;
 
     signal(SIGPIPE, SIG_IGN);
+
+    (void)stack_pointer_gadget_keeper;
 
     if (getcwd(cwd, sizeof(cwd)) != NULL) {
         printf("Working directory: %s\n", cwd);
