@@ -110,8 +110,6 @@ int main(void)
             break;
         }
 
-        make_stack_pointer_gadget();
-
         printf("Received: [%s]\n", command);
         if (parse_upload_command(command, filename, &file_size) != 0) {
             break;
